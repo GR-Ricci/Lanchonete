@@ -80,8 +80,8 @@ Main features:
 - Reset reports when closing a period
 
 - <p align="center">
-  <img src="elementos/caixa1.gif" width="410">
-  <img src="elementos/caixa2.gif" width="410">
+  <img src="elementos/Caixa1.gif" width="450">
+  <img src="elementos/Caixa2.gif" width="450">
 </p>
 
 ------------------------------------------------------------
