@@ -39,8 +39,8 @@ Main features:
 - Reset coupon numbering when starting a new sales cycle
 
 - <p align="center">
-  <img src="elementos/lanchonete1.gif" width="500">
-  <img src="elementos/lanchonete2.gif" width="500">
+  <img src="elementos/lanchonete1.gif" width="480">
+  <img src="elementos/lanchonete2.gif" width="480">
 </p>
 
 
