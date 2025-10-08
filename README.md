@@ -59,8 +59,8 @@ Main features:
 - Send the order to the Cashier for payment
 
 - <p align="center">
-  <img src="elementos/cliente1.gif" width="410">
-  <img src="elementos/cliente2.gif" width="410">
+  <img src="elementos/cliente1.gif" width="480">
+  <img src="elementos/cliente2.gif" width="480">
 </p>
 
 ------------------------------------------------------------
@@ -80,8 +80,8 @@ Main features:
 - Reset reports when closing a period
 
 - <p align="center">
-  <img src="elementos/Caixa1.gif" width="450">
-  <img src="elementos/Caixa2.gif" width="450">
+  <img src="elementos/Caixa1.gif" width="480">
+  <img src="elementos/Caixa2.gif" width="480">
 </p>
 
 ------------------------------------------------------------
