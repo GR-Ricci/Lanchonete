@@ -16,7 +16,7 @@ struct Item {
     double preco;
 };
 
-// ----- estrutura global -----
+// ----- estrutura global ----- //
 map<string, vector<Item>> categorias;
 vector<string> ordemCategorias;
 int nextId = 1;
@@ -25,7 +25,8 @@ int cupomCounter = 1;
 const string MENU_FILE = "menu.csv";
 const string SETTINGS_FILE = "settings.txt";
 
-// ---------- formatacao ----------
+// ---------- formatacao ---------- //
+
 string capitalize(const string& s) {
     if (s.empty()) return s;
     string out = s;
@@ -33,14 +34,14 @@ string capitalize(const string& s) {
     out[0] = toupper(out[0]);
     return out;
 }
-
 string formatCupom(int n) {
     stringstream ss;
     ss << setw(3) << setfill('0') << n;
     return ss.str();
 }
 
-// ---------- leitura ----------
+// ---------- leitura ---------- //
+
 string readLine(const string& prompt, bool allowEmpty = false) {
     string s;
     cout << prompt;
@@ -68,7 +69,6 @@ int readInt(const string& prompt) {
         }
     }
 }
-
 double readDoubleReq(const string& prompt) {
     while (true) {
         string s = readLine(prompt, true);
@@ -100,13 +100,13 @@ void pause() {
     getline(cin, dummy);
 }
 
-// ---------- salvar / carregar ----------
+// ---------- salvar / carregar ---------- //
+
 void carregarMenu() {
     categorias.clear();
     ordemCategorias.clear();
     ifstream fin(MENU_FILE);
     if (!fin.is_open()) return;
-
     string line;
     while (getline(fin, line)) {
         if (line.empty()) continue;
@@ -120,12 +120,10 @@ void carregarMenu() {
         it.nome = nome;
         if (!getline(ss, token, ';')) continue;
         it.preco = stod(token);
-
         if (categorias.find(categoria) == categorias.end()) {
             ordemCategorias.push_back(categoria);
         }
         categorias[categoria].push_back(it);
-
         if (it.id >= nextId) nextId = it.id + 1;
     }
     fin.close();
@@ -155,12 +153,12 @@ void salvarConfig() {
     fout.close();
 }
 
-// ---------- operacoes ----------
+// ---------- operacoes ---------- //
+
 map<int, pair<string,int>> listarMenu(bool mostrarId = false) {
     cout << "----------------------------------------\n";
     cout << "               [CARDAPIO]\n";
     cout << "========================================" << endl;
-
     map<int, pair<string,int>> mapaIds;
     int idExib = 1;
     bool tem = false;
@@ -184,7 +182,6 @@ map<int, pair<string,int>> listarMenu(bool mostrarId = false) {
         }
     }
     cout << "========================================" << endl;
-
     if (!tem) cout << "Nenhum item cadastrado.\n";
     return mapaIds;
 }
@@ -198,7 +195,6 @@ string escolherCategoria(bool permitirVoltar = false) {
         ordemCategorias.push_back(nova);
         return nova;
     }
-
     cout << "\nEscolha a categoria:\n";
     int i = 1;
     for (auto &c : ordemCategorias) {
@@ -207,10 +203,8 @@ string escolherCategoria(bool permitirVoltar = false) {
     }
     cout << i << " - Criar nova categoria\n";
     if (permitirVoltar) cout << "0 - Voltar\n";
-
     int opc = readInt("Opcao: ");
     if (permitirVoltar && opc == 0) return "";
-
     if (opc >= 1 && opc < i) {
         return ordemCategorias[opc - 1];
     } else if (opc == i) {
@@ -228,7 +222,6 @@ string escolherCategoria(bool permitirVoltar = false) {
 void adicionarItem() {
     string categoria = escolherCategoria(true);
     if (categoria.empty()) return;
-
     Item novo;
     novo.id = nextId++;
     novo.nome = readLine("Nome do item (ou ENTER para cancelar): ", true);
@@ -283,10 +276,8 @@ void editarItemMenu(Item &it, vector<Item> &lista) {
 void editarItem() {
     auto mapa = listarMenu(true);
     if (mapa.empty()) return;
-
     int id = readInt("\nDigite o numero do item para editar (0 cancela): ");
     if (id == 0 || mapa.find(id) == mapa.end()) return;
-
     string cat = mapa[id].first;
     int idx = mapa[id].second;
     editarItemMenu(categorias[cat][idx], categorias[cat]);
@@ -303,7 +294,6 @@ void editarCategoria() {
     }
     int opc = readInt("Qual categoria editar (0 cancela): ");
     if (opc <= 0 || opc > (int)ordemCategorias.size()) return;
-
     string cat = ordemCategorias[opc-1];
     while (true) {
         cout << "\nEditando categoria: " << cat << "\n";
@@ -336,21 +326,19 @@ void editarCategoria() {
     }
 }
 
-// ---------- remover ----------
+// ---------- remover ---------- //
+
 void removerItem() {
     auto mapa = listarMenu(true);
     if (mapa.empty()) return;
-
     int id = readInt("\nDigite o numero do item para remover (0 cancela): ");
     if (id == 0 || mapa.find(id) == mapa.end()) return;
-
     string cat = mapa[id].first;
     int idx = mapa[id].second;
     cout << "Removendo: " << categorias[cat][idx].nome << " da categoria " << cat << "\n";
     categorias[cat].erase(categorias[cat].begin() + idx);
     salvarMenu();
 }
-
 void removerCategoria() {
     if (ordemCategorias.empty()) {
         cout << "Nenhuma categoria para remover.\n";
@@ -370,7 +358,8 @@ void removerCategoria() {
     }
 }
 
-// ---------- menu cupom ----------
+// ---------- menu cupom ---------- //
+
 void menuCupom() {
     while (true) {
         cout << "\n===== MENU CUPOM =====\n";
@@ -379,7 +368,6 @@ void menuCupom() {
         cout << "3 - Visualizar cupom atual\n";
         cout << "0 - Voltar\n";
         int opc = readInt("Opcao: ");
-
         switch (opc) {
             case 1:
                 cupomCounter = 1;
@@ -411,7 +399,8 @@ void menuCupom() {
     }
 }
 
-// ---------- submenus ----------
+// ---------- submenus ---------- //
+
 void menuEditar() {
     while (true) {
         cout << "\n===== EDITAR =====\n";
@@ -431,7 +420,6 @@ void menuEditar() {
         }
     }
 }
-
 void menu() {
     while (true) {
         cout << "\n==================== MENU ====================\n";
@@ -451,6 +439,8 @@ void menu() {
         }
     }
 }
+
+// ---------- main ---------- //
 
 int main() {
     carregarMenu();

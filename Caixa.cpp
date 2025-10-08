@@ -9,9 +9,7 @@
 
 using namespace std;
 
-// =================================================================================
-// CONSTANTES E ESTRUTURAS DE DADOS
-// =================================================================================
+// ---------- estruturas ---------- //
 
 const string PEDIDOS_ABERTOS_FILE = "pedidos_abertos.csv";
 const string PEDIDOS_PAGOS_FILE = "pedidos_pagos.csv";
@@ -25,9 +23,7 @@ struct Pedido {
     string itens;
 };
 
-// =================================================================================
-// FUNÇÕES DE UTILIDADE
-// =================================================================================
+// ---------- funcoes ---------- //
 
 string trim(const string &s) {
     const string ws = " \t\n\r";
@@ -43,8 +39,12 @@ string formatCupom(int n) {
     return ss.str();
 }
 
+// ---------- linhas ---------- //
+
 void linha_menu() { cout << "========================================\n"; }
 void separador() { cout << "-------------------------------------------\n"; }
+
+// ---------- formatacao ----------
 
 string dataAtual() {
     time_t t = time(nullptr);
@@ -55,30 +55,24 @@ string dataAtual() {
        << 1900 + lt->tm_year;
     return ss.str();
 }
-
-// transforma string para maiúsculo
 string toUpper(const string &s) {
     string out = s;
     transform(out.begin(), out.end(), out.begin(), ::toupper);
     return out;
 }
 
-// =================================================================================
-// FUNÇÕES DE ARQUIVO
-// =================================================================================
+// ---------- arquivos ---------- //
 
 vector<Pedido> carregarPedidos(const string& filename) {
     vector<Pedido> pedidos;
     ifstream fin(filename);
     if (!fin.is_open()) return pedidos;
-
     string line;
     while (getline(fin, line)) {
         if (line.empty()) continue;
         stringstream ss(line);
         string token;
         Pedido p;
-
         if (!getline(ss, token, ';')) continue;
         p.cupom = trim(token);
         if (!getline(ss, token, ';')) continue;
@@ -102,9 +96,7 @@ void salvarPedidos(const string& filename, const vector<Pedido>& pedidos) {
     fout.close();
 }
 
-// =================================================================================
-// FUNÇÕES DE LUCRO
-// =================================================================================
+// ---------- lucro ---------- //
 
 double calcularLucroDoDia(const vector<Pedido>& pagos) {
     double total = 0.0;
@@ -127,14 +119,11 @@ void salvarLucro(const string& filename, double total) {
     fout.close();
 }
 
-// =================================================================================
-// FUNÇÕES DE RELATÓRIO
-// =================================================================================
+// ---------- relatorio ---------- //
 
 void relatorioDia() {
     vector<Pedido> pagos = carregarPedidos(PEDIDOS_PAGOS_FILE);
     double lucroDia = calcularLucroDoDia(pagos);
-
     linha_menu();
     cout << "        RELATORIO DE LUCRO DO DIA\n";
     linha_menu();
@@ -162,15 +151,12 @@ void relatorioAno() {
     linha_menu();
 }
 
-// =================================================================================
-// FUNÇÕES DE RESET
-// =================================================================================
+// ---------- reset ---------- //
 
 void resetarDia() {
     separador();
     cout << "\n  --DAR BAIXA NO DIA--\n";
     cout << "Digite CONFIRMAR para prosseguir\nOu 0 para cancelar\n> ";
-
     string confirm;
     cin >> confirm;
     confirm = toUpper(confirm);
@@ -181,19 +167,15 @@ void resetarDia() {
     if (confirm == "CONFIRMAR") {
         vector<Pedido> pagos = carregarPedidos(PEDIDOS_PAGOS_FILE);
         double lucroDia = calcularLucroDoDia(pagos);
-
-        // adiciona no mês e no ano
         double lucroMes = carregarLucro(LUCROS_MES_FILE) + lucroDia;
         double lucroAno = carregarLucro(LUCROS_ANO_FILE) + lucroDia;
         salvarLucro(LUCROS_MES_FILE, lucroMes);
         salvarLucro(LUCROS_ANO_FILE, lucroAno);
-
         ofstream(PEDIDOS_ABERTOS_FILE, ios::trunc).close();
         ofstream(PEDIDOS_PAGOS_FILE, ios::trunc).close();
-
-        cout << "\n✅ Lucro do dia (R$ " << fixed << setprecision(2)
+        cout << "\n Lucro do dia (R$ " << fixed << setprecision(2)
              << lucroDia << ") adicionado ao mes e ano.\n";
-        cout << "✅ Relatorio do dia resetado com sucesso!\n";
+        cout << " Relatorio do dia resetado com sucesso!\n";
     } else {
         cout << "Entrada invalida. Operacao cancelada.\n";
     }
@@ -203,7 +185,6 @@ void resetarMes() {
     separador();
     cout << "\n  --RESETAR RELATORIO DO MES--\n";
     cout << "Digite CONFIRMAR para prosseguir\nOu 0 para cancelar\n> ";
-
     string confirm;
     cin >> confirm;
     confirm = toUpper(confirm);
@@ -213,7 +194,7 @@ void resetarMes() {
     }
     if (confirm == "CONFIRMAR") {
         ofstream(LUCROS_MES_FILE, ios::trunc).close();
-        cout << "\n✅ Relatorio mensal resetado com sucesso!\n";
+        cout << "\n Relatorio mensal resetado com sucesso!\n";
     } else {
         cout << "Entrada invalida. Operacao cancelada.\n";
     }
@@ -223,7 +204,6 @@ void resetarAno() {
     separador();
     cout << "  --RESETAR RELATORIO DO ANO--\n";
     cout << "Digite CONFIRMAR para prosseguir\nOu 0 para cancelar\n> ";
-
     string confirm;
     cin >> confirm;
     confirm = toUpper(confirm);
@@ -233,22 +213,19 @@ void resetarAno() {
     }
     if (confirm == "CONFIRMAR") {
         ofstream(LUCROS_ANO_FILE, ios::trunc).close();
-        cout << "\n✅ Relatorio anual resetado com sucesso!\n";
+        cout << "\n Relatorio anual resetado com sucesso!\n";
     } else {
         cout << "Entrada invalida. Operacao cancelada.\n";
     }
 }
 
-// =================================================================================
-// FUNÇÕES DE EXIBIÇÃO E PAGAMENTO
-// =================================================================================
+// ---------- exibição ---------- //
 
 void exibirPedidos(const vector<Pedido>& pedidos) {
     if (pedidos.empty()) {
         cout << "Nenhum pedido pendente no momento.\n";
         return;
     }
-
     cout << "CUPOM | CLIENTE" << setw(25) << " | TOTAL" << endl;
     separador();
     for (const auto& p : pedidos) {
@@ -270,22 +247,18 @@ void exibirDetalhesPedido(const Pedido& p) {
 void processarPagamento() {
     vector<Pedido> abertos = carregarPedidos(PEDIDOS_ABERTOS_FILE);
     vector<Pedido> pagos = carregarPedidos(PEDIDOS_PAGOS_FILE);
-
     if (abertos.empty()) {
         cout << "\nNao ha pedidos pendentes.\n";
         return;
     }
-
     int opcao;
     string termo;
     cout << "\nBuscar pedido por:\n1 - Cupom\n2 - Nome do Cliente\nOpcao: ";
     cin >> opcao;
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
     cout << "Digite o termo de busca: ";
     getline(cin, termo);
     transform(termo.begin(), termo.end(), termo.begin(), ::tolower);
-
     auto it = abertos.end();
     if (opcao == 1) {
         string cupomFormatado = termo;
@@ -300,12 +273,10 @@ void processarPagamento() {
             return nome.find(termo) != string::npos;
         });
     }
-
     if (it == abertos.end()) {
         cout << "\nPedido nao encontrado.\n";
         return;
     }
-
     exibirDetalhesPedido(*it);
     cout << "Confirmar pagamento (S/N)? ";
     char c;
@@ -315,15 +286,13 @@ void processarPagamento() {
         abertos.erase(it);
         salvarPedidos(PEDIDOS_ABERTOS_FILE, abertos);
         salvarPedidos(PEDIDOS_PAGOS_FILE, pagos);
-        cout << "\n✅ Pagamento processado com sucesso!\n";
+        cout << "\n Pagamento processado com sucesso!\n";
     } else {
         cout << "\nPagamento cancelado.\n";
     }
 }
 
-// =================================================================================
-// MENUS
-// =================================================================================
+// ---------- menus ---------- //
 
 void menuRelatorios() {
     while (true) {
@@ -371,6 +340,8 @@ void menuResetarRelatorios() {
     }
 }
 
+// ---------- main ---------- //
+
 int main() {
     int opcao;
     do {
@@ -385,7 +356,6 @@ int main() {
         linha_menu();
         cout << "Opcao: ";
         cin >> opcao;
-
         switch (opcao) {
             case 1: {
                 cout << "\n        PEDIDOS PENDENTES\n";
@@ -401,6 +371,5 @@ int main() {
         }
         cout << "\n";
     } while (opcao != 0);
-
     return 0;
 }

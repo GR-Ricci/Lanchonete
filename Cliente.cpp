@@ -12,15 +12,11 @@
 
 using namespace std;
 
-// ... (As structs e a maioria das funções permanecem as mesmas) ...
-// ... (carregarMenuDoDono, formatCupom, trim, exibirPedido, etc.)
+// ---------- salvar pedidos ---------- //
 
-// NOVO: Nome do arquivo para salvar os pedidos pendentes
 const string PEDIDOS_FILE = "pedidos_abertos.csv";
 
-// =================================================================================
-// ESTRUTURAS E FUNÇÕES IMPORTADAS DE DONO.CPP
-// =================================================================================
+// ---------- funcoes >> lanchonete ---------- //
 
 struct Item {
     int id;
@@ -28,22 +24,24 @@ struct Item {
     double preco;
 };
 
-// Estruturas globais para o menu
+// ---------- estruturas ---------- //
+
 map<string, vector<Item>> categorias;
 vector<string> ordemCategorias;
+
 int cupomCounter = 1;
 
 const string MENU_FILE = "menu.csv";
 const string SETTINGS_FILE = "settings.txt";
 
-// Funções de utilidade
+// ---------- formatacao ---------- //
+
 string formatCupom(int n) {
     stringstream ss;
     ss << setw(3) << setfill('0') << n;
     return ss.str();
 }
 
-// trim helper: remove espaços em branco e CR/LF das extremidades
 string trim(const string &s) {
     const string ws = " \t\n\r";
     size_t start = s.find_first_not_of(ws);
@@ -52,63 +50,48 @@ string trim(const string &s) {
     return s.substr(start, end - start + 1);
 }
 
-// =================================================================================
-// FUNÇÃO DE CARREGAMENTO DO DONO (corrigida para fazer trim)
-// =================================================================================
-
+// ---------- menu > lanchonete ---------- //
 
 void carregarMenu() {
     categorias.clear();
     ordemCategorias.clear();
-
     ifstream fin(MENU_FILE);
     if (!fin.is_open()) {
         cout << "\n  Nao foi possivel carregar o cardapio\n";
         exit(1);
     }
-
     string line;
     while (getline(fin, line)) {
         if (line.empty()) continue;
         stringstream ss(line);
         string token, categoria, nome;
         Item it;
-
-        // Leitura no formato id;categoria;nome;preco
         if (!getline(ss, token, ';')) continue;
         token = trim(token);
         try {
             it.id = stoi(token);
         } catch (...) {
-            continue; // linha com id inválido -> ignora
+            continue; 
         }
-
         if (!getline(ss, categoria, ';')) continue;
         if (!getline(ss, nome, ';')) continue;
-        if (!getline(ss, token, ';')) continue; // preco
-        // trim tudo
+        if (!getline(ss, token, ';')) continue; 
         categoria = trim(categoria);
         nome = trim(nome);
         token = trim(token);
-
         if (categoria.empty() || nome.empty() || token.empty()) continue;
         try {
             it.preco = stod(token);
         } catch (...) {
-            continue; // preco invalido -> ignora
+            continue; 
         }
-
         it.nome = nome;
-
-        // Cria categoria se não existir (mantendo ordem)
         if (categorias.find(categoria) == categorias.end()) {
             ordemCategorias.push_back(categoria);
         }
         categorias[categoria].push_back(it);
     }
     fin.close();
-
-    // Carrega o cupom do Dono
     ifstream cfg(SETTINGS_FILE);
     if (cfg.is_open()) {
         cfg >> cupomCounter;
@@ -116,18 +99,15 @@ void carregarMenu() {
     } else {
         cupomCounter = 1;
     }
-
     cout << "\n Cardapio carregado com sucesso!\n";
     cout << "Cupom atual: " << formatCupom(cupomCounter) << "\n";
 }
 
-// Atualiza o cupom ao gerar novo
 void salvarCupom() {
     ofstream fout(SETTINGS_FILE);
     fout << cupomCounter << "\n";
     fout.close();
 }
-
 int gerarCupom() {
     int atual = cupomCounter;
     cupomCounter++;
@@ -135,35 +115,31 @@ int gerarCupom() {
     return atual;
 }
 
-// =================================================================================
-// ESTRUTURAS PARA O PEDIDO DO CLIENTE
-// =================================================================================
+// ---------- estrutura pedido ---------- //
 
 struct PedidoItem {
     string nome;
     double preco;
-    string categoria; // Para facilitar a remoção
+    string categoria; 
 };
 
-// =================================================================================
-// FUNÇÕES DE UTILIDADE E EXIBIÇÃO (MANTIDAS DO LANCHONETE.CPP)
-// =================================================================================
+// ---------- linhas ---------- //
 
 void linha_menu() { cout << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+"; }
 void linha_menu_principal() { cout << "============================="; }
 void separador() { cout << "-----------------------------"; }
+
+// ---------- exibição ---------- //
 
 void exibirPedido(const vector<PedidoItem>& pedido) {
     if (pedido.empty()) return;
     cout << "Pedido:" << endl;
     linha_menu_principal();
     cout << "\n";
-
     map<string, vector<string>> itensPorCategoria;
     for (const auto& item : pedido) {
         itensPorCategoria[item.categoria].push_back(item.nome);
     }
-
     for (const auto& cat : ordemCategorias) {
         if (itensPorCategoria.count(cat) && !itensPorCategoria[cat].empty()) {
             cout << "> " << cat << ":\n";
@@ -188,16 +164,13 @@ void exibirPedidoComIndices(const vector<PedidoItem>& pedido) {
     }
 }
 
-// =================================================================================
-// FUNÇÕES DE MENU DINÂMICO
-// =================================================================================
+// ---------- funcoes menu ---------- //
 
 void menuCategoria(const string& categoria, vector<PedidoItem>& pedido, double& total_pedido) {
     if (categorias.find(categoria) == categorias.end() || categorias[categoria].empty()) {
         cout << "\nNenhum item cadastrado na categoria " << categoria << ".\n";
         return;
     }
-
     int escolha;
     do {
         linha_menu();
@@ -208,53 +181,39 @@ void menuCategoria(const string& categoria, vector<PedidoItem>& pedido, double& 
         }
         cout << " " << categorias[categoria].size() + 1 << " - Retornar" << endl;
         linha_menu();
-
         cout << "\n Adicionar: ";
         cin >> escolha;
-
         if (cin.fail()) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Opcao Invalida" << endl;
             continue;
         }
-
         if (escolha >= 1 && escolha <= (int)categorias[categoria].size()) {
             const Item& itemEscolhido = categorias[categoria][escolha - 1];
             cout << "[" << itemEscolhido.nome << " Adicionado]" << endl;
             separador();
-
             PedidoItem novoItem = {itemEscolhido.nome, itemEscolhido.preco, categoria};
             pedido.push_back(novoItem);
             total_pedido += itemEscolhido.preco;
-
             cout << "\n";
             exibirPedido(pedido);
-
             separador();
             cout << "\n> Total Pedido: R$" << total_pedido << endl;
             cout << endl;
         } else if (escolha != (int)categorias[categoria].size() + 1) {
             cout << "Opcao Invalida" << endl;
         }
-
     } while (escolha != (int)categorias[categoria].size() + 1);
 }
 
-
-// NOVO: Função para salvar o pedido finalizado em um arquivo CSV
 void salvarPedido(const string& nomeCliente, int cupom, double total, const vector<PedidoItem>& pedido) {
-    // Abre o arquivo em modo "append" (adicionar ao final)
     ofstream fout(PEDIDOS_FILE, ios::app);
     if (!fout.is_open()) {
         cout << "\nERRO CRITICO: Nao foi possivel abrir o arquivo de pedidos para salvar.\n";
         return;
     }
-
-    // Formato: cupom;nome_cliente;total;item1,item2,item3
     fout << formatCupom(cupom) << ";" << nomeCliente << ";" << fixed << setprecision(2) << total << ";";
-
-    // Concatena os nomes dos itens com vírgulas
     for (size_t i = 0; i < pedido.size(); ++i) {
         fout << pedido[i].nome << (i == pedido.size() - 1 ? "" : ",");
     }
@@ -262,8 +221,6 @@ void salvarPedido(const string& nomeCliente, int cupom, double total, const vect
     fout.close();
 }
 
-
-// FUNÇÃO DE REINÍCIO MODIFICADA
 void reiniciarSistema() {
     cout << "\nIniciando novo atendimento em ";
     for (int i = 10; i >= 1; --i) {
@@ -273,52 +230,41 @@ void reiniciarSistema() {
     cout << "\n\n========================================\n\n";
 }
 
-// =================================================================================
-// FUNÇÃO PRINCIPAL MODIFICADA
-// =================================================================================
+// ---------- main ---------- //
 
 int main() {
     carregarMenu();
-
     while (true) {
         map<int, string> menuPrincipalMap;
         int menuIndex = 1;
         for (const string& cat : ordemCategorias) {
             menuPrincipalMap[menuIndex++] = cat;
         }
-
         if (menuPrincipalMap.empty()) {
             cout << "ERRO: Nenhuma categoria encontrada no menu.csv.\n";
             return 1;
         }
-
         double total_pedido = 0.00;
         int opcao = 0, opcao_final = 0;
         vector<PedidoItem> pedido;
-
         do {
             linha_menu_principal();
             cout << "\n| >  CARDAPIO LANCHONETE  < |" << endl;
             separador();
-
             for (const auto& pair : menuPrincipalMap) {
                 cout << "\n" << pair.first << " - " << pair.second;
             }
-
             cout << "\n" << menuIndex << " - Conferir & Editar Pedido";
             cout << "\n" << menuIndex + 1 << " - Finalizar Pedido" << endl;
             linha_menu_principal();
-
             cout << "\nOpcao: ";
             cin >> opcao;
-
             if (cin.fail()) {
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 cout << "Opcao Invalida" << endl;
                 continue;
             }
-
             if (menuPrincipalMap.count(opcao)) {
                 string categoria = menuPrincipalMap[opcao];
                 menuCategoria(categoria, pedido, total_pedido);
@@ -331,22 +277,18 @@ int main() {
                         separador();
                         cout << "\n";
                     }
-
                     cout << "> Total Pedido: R$" << fixed << setprecision(2) << total_pedido << endl;
                     separador();
                     cout << "\n1 - Retornar\n2 - Finalizar pedido\n3 - Remover Itens";
                     cout << "\nSelecione: ";
                     cin >> opcao_final;
-
                     if (cin.fail()) {
                         cin.clear();
                         cin.ignore(numeric_limits<streamsize>::max(), '\n');
                         cout << "Opcao Invalida" << endl;
                         continue;
                     }
-
                     if (opcao_final == 1 || opcao_final == 2) break;
-
                     if (opcao_final == 3) {
                         int itemRemover;
                         while (true) {
@@ -363,7 +305,6 @@ int main() {
                             linha_menu();
                             cout << "\n[Digite 0 para voltar]\nDigite o numero do item que deseja remover: ";
                             cin >> itemRemover;
-
                             if (cin.fail()) {
                                 itemRemover = -1;
                                 cin.clear();
@@ -371,13 +312,11 @@ int main() {
                                 cout << "Valor Invalido!\n";
                                 continue;
                             }
-
                             if (itemRemover == 0) break;
                             if (itemRemover < 1 || itemRemover > totalItens) {
                                 cout << "Numero invalido!\n";
                                 continue;
                             }
-
                             int i = itemRemover - 1;
                             cout << "Removido: " << pedido[i].nome << endl;
                             total_pedido -= pedido[i].preco;
@@ -392,23 +331,15 @@ int main() {
             } else {
                 cout << "Opcao Invalida" << endl;
             }
-
         } while (opcao_final != 2);
-
         if (total_pedido > 0) {
-            // NOVO: Solicita o nome do cliente antes de finalizar
             string nomeCliente;
-
             separador();
             cout << "\nPara finalizar, digite seu nome: ";
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Limpa o buffer do 'cin'
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
             getline(cin, nomeCliente);
-
             int cupomGerado = gerarCupom();
-
-            // NOVO: Salva o pedido no arquivo
             salvarPedido(nomeCliente, cupomGerado, total_pedido, pedido);
-
             separador();
             cout << "\n";
             exibirPedido(pedido);
@@ -420,13 +351,11 @@ int main() {
             cout << "Pedido salvo com sucesso!\n";
             cout << "Realize o pagamento no Caixa informando seu nome ou cupom.\nObrigado e volte sempre!" << endl;
             linha_menu_principal();
-
         } else {
             separador();
             cout << "\nNenhum pedido realizado\nObrigado e volte sempre!" << endl;
             linha_menu_principal();
         }
-
         reiniciarSistema();
     }
     return 0;
